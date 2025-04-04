@@ -1,0 +1,17 @@
+services:
+  forgego:
+    build: .
+    container_name: forgego
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+    volumes:
+      - ./output:/workspace/output
+    networks:
+      - samm-network
+    environment:
+      - NODE_ENV=production
+
+networks:
+  samm-network:
+    external: true
