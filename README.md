@@ -1,77 +1,86 @@
-# Proyecto: ForgeGo - Generador Visual de Módulos en Go
+# ForgeGo 🔧🚀
 
-**ForgeGo** es una herramienta basada en contenedores que proporciona una interfaz web moderna para crear módulos en Go utilizando una plantilla estandarizada. Está diseñada para funcionar como un servicio independiente dentro del ecosistema SAMM.
-
----
-
-## 🌐 Tecnologías utilizadas
-
-| Tecnología       | Propósito                                       |
-|------------------|-------------------------------------------------|
-| **React (SAMM)** | Frontend moderno para formularios y visualización |
-| **Tailwind CSS** | Estilo minimalista con responsividad integrada   |
-| **Node.js**      | Backend simple con API REST para clonado         |
-| **Docker**       | Contenerización completa del entorno              |
-| **Git**          | Clonado de la plantilla oficial desde GitHub     |
-| **Bash**         | Ejecución del script generador de módulos         |
+ForgeGo es una herramienta visual construida en Go + Vite para generar módulos Go dentro de un entorno Dockerizado, basada en plantillas reutilizables y configuraciones CI/CD estandarizadas.
 
 ---
 
-## 🚀 Características principales
+## 🛠 Tecnologías utilizadas
 
-- Interfaz gráfica para ingresar:
-  - Nombre del módulo (ej. `users-module`)
-  - Ruta de destino (ej. `/workspace/proyectos`)
-- Botón para ejecutar el proceso de clonación y personalización.
-- Vista del log de creación o mensajes de error.
-- Sincronización con carpeta compartida del host.
-
----
-
-## 🛠️ Estructura del contenedor
-
-```
-ForgeGo/
-├── app/                  # Frontend React (SAMM compatible)
-│   ├── public/
-│   ├── src/
-|   |   ├── main.tsx
-│   │   └── InitGoModule.tsx  # Componente principal
-│   ├── package.json
-│   └── vite.config.ts
-├── api/                  # Backend Node.js para ejecutar scripts
-│   ├── index.js          # API Express
-│   ├── init-handler.js   # Ejecuta el script bash
-│   └── package.json
-├── scripts/
-│   └── init-go-module.sh # Script Bash que clona y prepara el módulo
-├── output/               # Carpeta montada donde se crean los proyectos
-├── Dockerfile            # Imagen de ForgeGo
-├── docker-compose.yml    # Orquestación de contenedor
-└── README.md             # Documentación del proyecto
-
-```
+- **Go** – Backend que sirve el frontend y ejecuta la lógica de creación de módulos.
+- **Vite + Vanilla JS** – Frontend ligero para ingresar el nombre del módulo.
+- **Docker** – Empaqueta todo en un solo contenedor.
+- **Node.js & npm** – Usados en tiempo de build para compilar el frontend.
+- **Git** – Se clona la plantilla base desde GitHub.
 
 ---
 
-## ⚡ Uso rápido
+## ⚙️ ¿Cómo funciona?
+
+1. El contenedor construye automáticamente el frontend (`npm install && npm run build`) y compila el backend en Go.
+2. El backend en Go sirve:
+   - Los archivos del frontend compilado (`app/dist`) en `/`
+   - Un endpoint `POST /api/init-module` para crear módulos
+3. Desde el navegador, el usuario ingresa el nombre del módulo y hace clic en "Crear".
+4. El servidor:
+   - Clona la plantilla desde GitHub
+   - Crea un nuevo folder `/workspace/output/<nombre>`
+   - Reemplaza los placeholders `__MODULE_NAME__`
+   - Prepara el módulo con `go.mod` y estructura lista para usar
+
+---
+
+## ▶️ Cómo correr
 
 ```bash
-git clone https://github.com/a81Biz/forgego
-cd forgego
-docker-compose up --build
+docker-compose build --no-cache
+docker-compose up
 ```
 
-Accede a la interfaz en: [http://localhost:3000](http://localhost:3000)
+Luego ve a:
+
+```
+http://localhost:8080
+```
 
 ---
 
-## 🚧 En construcción
-- [ ] Selección del template desde UI.
-- [ ] Integración directa con SAMM.
-- [ ] Compatibilidad con otros lenguajes o frameworks.
+## 🧭 Flujo del sistema
+
+```mermaid
+graph TD
+    A[Navegador: Usuario ingresa nombre del módulo] --> B[Frontend hace fetch POST /api/init-module]
+    B --> C[Go Backend recibe y valida el nombre]
+    C --> D[Clona el template desde GitHub]
+    D --> E[Reemplaza __MODULE_NAME__ en archivos clave]
+    E --> F[Genera carpeta en /workspace/output/<nombre>]
+    F --> G[Responde "módulo creado con éxito"]
+    G --> H[Frontend muestra confirmación]
+```
 
 ---
 
-## 💪 Autonomía
-Este proyecto puede ejecutarse de forma independiente o integrarse como módulo visual de SAMM bajo el nombre de `forgego`.
+## 📁 Estructura esperada de salida
+
+```
+/workspace/output/
+└── example-module/
+    ├── Dockerfile
+    ├── docker-compose.yml
+    ├── main.go
+    ├── .air.toml
+    └── devcontainer.json
+```
+
+---
+
+## 📌 ¿Qué pasa con `go.mod` y `go.sum` en ForgeGo?
+
+Los archivos `go.mod` y `go.sum` **son necesarios únicamente para construir el backend de ForgeGo dentro del contenedor**.
+
+- 🔧 Se usan al momento de ejecutar `go build` para compilar el binario que sirve la API REST y la interfaz gráfica.
+- 🐳 Están en la raíz del proyecto para facilitar el `docker build`, pero **no son útiles ni necesarios fuera del contenedor**.
+- 📁 No tienen relación con los módulos que se generan; cada módulo generado incluye su **propio** `go.mod` y configuración.
+
+Si deseas, puedes ignorarlos en tu entorno local o agregarlos a `.dockerignore`, ya que **su única finalidad es apoyar la build del contenedor**.
+
+---

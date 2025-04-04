@@ -1,34 +1,21 @@
-# Etapa 1: Construcción del frontend (React)
-FROM node:20-alpine AS builder
+FROM golang:1.21-alpine
+
 WORKDIR /app
-COPY app ./app
+
+# Instalar dependencias necesarias para Node y Go
+RUN apk add --no-cache git bash nodejs npm
+
+# Copiar archivos del proyecto
+COPY . .
+
+# Construir frontend con Vite
 WORKDIR /app/app
 RUN npm install && npm run build
 
-# Etapa 2: Contenedor final con servidor y frontend
-FROM node:20-alpine
-RUN apk add --no-cache git
-
-# Crear directorio de trabajo
+# Volver al root del proyecto y construir backend
 WORKDIR /app
+RUN go mod tidy && go build -o forgego-server main.go
 
-# Copiar el backend Node.js
-COPY api ./api
+EXPOSE 8080
 
-# Copiar el build del frontend a la ubicación correcta
-COPY --from=builder /app/app/dist ./frontend
-
-# Copiar el script Bash de inicialización
-COPY scripts/init-go-module.sh /usr/local/bin/init-go-module.sh
-RUN chmod +x /usr/local/bin/init-go-module.sh
-
-# Instalar dependencias del backend
-WORKDIR /app/api
-RUN npm install
-
-# Exponer puertos
-EXPOSE 3000
-EXPOSE 5173
-
-# Iniciar backend que también sirve el frontend
-CMD ["npm", "start"]
+CMD ["./forgego-server"]
