@@ -64,11 +64,18 @@ graph TD
 ```
 /workspace/output/
 └── example-module/
+    ├── .air.toml
+    ├── .gitattributes
     ├── Dockerfile
     ├── docker-compose.yml
+    ├── go.mod
+    ├── go.sum
     ├── main.go
-    ├── .air.toml
-    └── devcontainer.json
+    ├── README.md
+    ├── .devcontainer/
+    │   └── devcontainer.json
+    └── .vscode/
+        └── launch.json
 ```
 
 ---
