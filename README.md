@@ -53,7 +53,7 @@ graph TD
     C --> D[Clona el template desde GitHub]
     D --> E[Reemplaza __MODULE_NAME__ en archivos clave]
     E --> F[Genera carpeta en /workspace/output/<nombre>]
-    F --> G[Responde "módulo creado con éxito"]
+    F --> G[Responde módulo creado con éxito]
     G --> H[Frontend muestra confirmación]
 ```
 
